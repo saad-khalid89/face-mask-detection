@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Face Mask Detection</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 2rem;
+      }
+      h1 {
+        text-align: center;
+      }
+      input[type="file"] {
+        display: block;
+        margin-bottom: 1rem;
+      }
+      button {
+        padding: 0.5rem 1rem;
+        font-size: 1rem;
+      }
+      #result {
+        margin-top: 1.5rem;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Face Mask Detection</h1>
+    <p>Select an image containing a face to find out if a mask is present.</p>
+    <input type="file" id="fileInput" accept="image/*" />
+    <button id="predictBtn">Predict</button>
+    <p id="result"></p>
+    <script>
+      const fileInput = document.getElementById("fileInput");
+      const predictBtn = document.getElementById("predictBtn");
+      const resultEl = document.getElementById("result");
+
+      predictBtn.addEventListener("click", async () => {
+        const file = fileInput.files[0];
+        if (!file) {
+          alert("Please select an image file.");
+          return;
+        }
+        const formData = new FormData();
+        formData.append("file", file);
+        resultEl.textContent = "Processing...";
+        try {
+          const response = await fetch("http://localhost:8000/predict", {
+            method: "POST",
+            body: formData,
+          });
+          if (!response.ok) {
+            throw new Error(`Error ${response.status}: ${response.statusText}`);
+          }
+          const data = await response.json();
+          resultEl.textContent = `Prediction: ${data.prediction} (Confidence: ${(data.confidence * 100).toFixed(1)}%)`;
+        } catch (err) {
+          resultEl.textContent = "Failed to classify image.";
+          console.error(err);
+        }
+      });
+    </script>
+  </body>
+</html>
